@@ -1,0 +1,9 @@
+-- otp-service
+    -- CREATE OTP TABLE
+-- user-auth-service
+    -- CREATE USERS TABLE
+-- interests-service
+    -- CREATE INTERESTES TABLE
+    -- USER PROFILE
+    -- RELATION BETWEEN INTERESTES AND USERS
+    -- COMPLETE THE REGISTER PROCESS 
