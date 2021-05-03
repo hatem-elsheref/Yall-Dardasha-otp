@@ -1,17 +1,18 @@
+const { body, check } = require('express-validator')
 
-const validator = require('express-validator')
 
-const Response = require('../../../response')
+module.exports.otpPhoneValidator = () => {
 
-module.exports.otpPhoneValidator = (request, response, next) => {
+    return [
+        body('phone').isMobilePhone('ar-EG'),
+        check('phone', 'phone field must be less than or equal 16 digits long ').matches(/^[0-9]{11,16}$/, "i"),
+    ]
 
-    validator.body('phone').isMobilePhone('ar-EG')
+}
 
-    const errors = validator.validationResult(request)
+module.exports.otpCodeValidator = (request, response, next) => {
 
-    if (!errors.isEmpty()) {
-        response.status(400)
-        return response.status(400).json(Response(400, 'failed', errors.errors[0].msg, [], errors.array()))
-    }
-    next()
+    return [
+        check('code', 'code field must be 5 digits long ').matches(/^[0-9]{5}$/, "i")
+    ]
 }

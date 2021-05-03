@@ -24,8 +24,6 @@ module.exports.code = (request, response) => {
 
     })
 
-
 }
-
 
 module.exports.verify = () => true

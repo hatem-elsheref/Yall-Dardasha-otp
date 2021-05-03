@@ -16,8 +16,15 @@ var generateCode = function () {
 
 function getByPhoneNumber(connection, phoneNumber) {
     return new Promise((resolve, reject) => {
-        let query = 'SELECT * FROM ' + table + ' WHERE phone = ? '
+        let query = 'SELECT * FROM ' + table + ' WHERE phone = ? ' // LIMIT 1
         connection.query(query, [phoneNumber], (error, results) => { return error ? resolve(100) : resolve(results) })
+    })
+}
+
+function getByPhoneNumberAndCode(connection, phoneNumber, code) {
+    return new Promise((resolve, reject) => {
+        let query = 'SELECT * FROM ' + table + ' WHERE phone = ? AND otp_code = ? LIMIT 1'
+        connection.query(query, [phoneNumber, code], (error, results) => { return error ? resolve(100) : resolve(result) })
     })
 }
 
@@ -47,7 +54,7 @@ function create(connection, phoneNumber) {
 
         let query = 'INSERT INTO ' + table + ' SET ?'
 
-        connection.query(query, values, function (error) { return error ? resolve(100) : resolve(200) })
+        connection.query(query, values, function (error) { error ? console.log(error) : ''; return error ? resolve(100) : resolve(200) })
 
     })
 }
@@ -109,10 +116,12 @@ module.exports.otpCode = async function (connection, phone, tries) {
     let response = await getByPhoneNumber(connection, phone)
     let rows = []
 
+
     if (Array.isArray(response))
         rows = response
     else
         return response
+
 
     if (rows.length > 0) {
 
@@ -144,6 +153,40 @@ module.exports.otpCode = async function (connection, phone, tries) {
 
 // verify if the saved code equal the code in the request body
 // input code and mobilePhone
-module.exports.otpVerify = function () {
+module.exports.otpVerify = async function (connection, phone, code) {
+
+    let response = await getByPhoneNumberAndCode(connection, phone, code)
+
+    console.log(response);
+    // let user = undefined
+
+    // if (Array.isArray(response))
+    //     rows = response
+    // else
+    //     return response
+
+    // if (rows.length > 0) {
+
+    //     // user exists in otp table
+
+    //     response = await allowedToGenerateNewCode(connection, rows[0], phone, tries)
+    //     if (response === true) {
+    //         // increment the tries number one step (+1)
+    //         /*
+    //         console.log('allowed to generate new code');
+    //         */
+    //         return await update(connection, phone, rows[0].tries < tries ? rows[0].tries + 1 : 1)
+    //     } else {
+    //         // not allowed to regenerate in current day try after 24 hours
+    //         /*
+    //          console.log('not allowed try after 24 h');
+    //         */
+    //         return 300;
+    //     }
+
+    // } else {
+    //     // create new record
+    //     return await create(connection, phone)
+    // }
 
 }
