@@ -10,7 +10,7 @@ module.exports = {
     app_url: process.env.APP_URL,
 
     otp_attempt: 3,
-    otp_expire_after: 5, // 5 min
+    otp_expire_after: 5,  // in min
 
 
     db: {

@@ -26,4 +26,22 @@ module.exports.code = (request, response) => {
 
 }
 
-module.exports.verify = () => true
+module.exports.verify = (request, response) => {
+
+    otpVerify(databaseHandler, request.body.phone, request.body.code, otpExpireAfter).then(status => {
+
+        switch (status) {
+            case 100:
+                return response.json(Response(100, 'fail', 'phone number not found'))
+            case 200:
+                return response.json(Response(200, 'success', 'code sent successfully', request.body.phone))
+            case 300:
+                return response.json(Response(300, 'fail', 'expired code'))
+            default:
+                return response.json(Response(400, 'fail', 'unknown error'))
+
+        }
+
+    })
+
+}
