@@ -4,7 +4,7 @@ const mysqlCredentials = configs.db.mysql
 
 const mysql = require('mysql')
 
-const connection = mysql.createPool({
+const connection = mysql.createConnection({
 
     host    : mysqlCredentials.db_host,
     user    : mysqlCredentials.db_user,

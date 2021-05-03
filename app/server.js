@@ -3,14 +3,14 @@ const config = require('./config/app')
 const express = require('express')
 
 const bodyParser = require('body-parser')
-const codeService = require('./services/opt-service/logic')
+const otpService = require('./services/opt-service/routes/otpRoute')
 
 const app = express()
 
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: true }))
 
-app.use('/auth', codeService)
+app.use('/auth/otp', otpService)
 
 
 app.get('/hi', (req, res) => {
