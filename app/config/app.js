@@ -1,4 +1,5 @@
 const path = require('path')
+
 require('dotenv').config({ path: path.join(__dirname, '..', '.env') })
 
 module.exports = {
@@ -10,8 +11,8 @@ module.exports = {
     app_url: process.env.APP_URL,
 
     otp_attempt: 3,
-    otp_expire_after: 5,  // in min
 
+    otp_expire_after: 5,  //in min
 
     db: {
         mysql: {
@@ -23,11 +24,27 @@ module.exports = {
         },
 
         mongo: {
+            connection_url: process.env.MONGO_URL,
+            connection_options: {
+                useNewUrlParser: true,
+                useUnifiedTopology: true,
+                useFindAndModify: false,
+                useCreateIndex: true
+            }
 
         },
 
         redis: {
+            host: process.env.REDIS_HOST,
+            port: process.env.REDIS_PORT,
+        }
+    },
 
+    jwt: {
+        secret: process.env.JWT_SECRET || 'W7bwoFsqizrvyDUfQxdgSB2tN6JAmCYK',
+        options: {
+            expiresIn: '24h',
+            algorithm: 'HS256'
         }
     }
 }

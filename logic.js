@@ -1,13 +1,13 @@
 
-const databaseHandler = require('../../config/mysql')
-const { otp_attempt: otpAttempt, otp_expire_after: otpExpireAfter } = require('../../config/app')
+const databaseHandler = require('./app/config/mysql')
+const { otp_attempt: otpAttempt, otp_expire_after: otpExpireAfter } = require('./app/config/app')
 
-const Response = require('../../response')
+const Response = require('./app/response')
 
 const validator = require('express-validator')
 
-const { code, verify } = require('./models/OtpModel')
-const phoneValidator = require('./middlewares/validatorMiddleware')
+const { code, verify } = require('./app/services/opt-service/models/OtpModel')
+const phoneValidator = require('./app/services/opt-service/middlewares/validatorMiddleware')
 const phoneValidator = require('./controllers/')
 
 

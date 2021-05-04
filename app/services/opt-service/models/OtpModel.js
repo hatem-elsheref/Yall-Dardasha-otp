@@ -1,11 +1,20 @@
+const { jwt: jwtConfig } = require('./../../../config/app')
+
+
+const User = require('./UserModel')
+
+const JWT = require('jsonwebtoken');
+
+const redis = require('redis');
+
 const table = 'otp';
 
-var generateCode = function () {
+const generateCode = function () {
 
-    return '55555' // for test
+    // return '55555' // for test
+
 
     return '' +
-
         Math.floor(Math.random() * 10) +
         Math.floor(Math.random() * 10) +
         Math.floor(Math.random() * 10) +
@@ -108,7 +117,6 @@ const allowedToGenerateNewCode = async function (connection, record, phone, trie
     }
 }
 
-
 // generate code and save it in db and send to user in sms
 // input mobile number
 module.exports.otpCode = async function (connection, phone, tries) {
@@ -150,7 +158,6 @@ module.exports.otpCode = async function (connection, phone, tries) {
 }
 
 
-
 // verify if the saved code equal the code in the request body
 // input code and mobilePhone
 module.exports.otpVerify = async function (connection, phone, code, expire) {
@@ -171,30 +178,56 @@ module.exports.otpVerify = async function (connection, phone, code, expire) {
 
     let currentTime = (new Date()).getTime()
 
-    // increment the tries number one step (+1)
     if (((currentTime - lastMessageSentAt) / 1000) <= expire * 60) { // then code valid
 
-        // call the user table and find or create new user
+        let userInfo = {}
+        const unknownError = 400
 
+        userInfo = await User.findOne({ phone: phone })
 
-        // create new user with phone only if not exist
+        if (userInfo === null) {
+            userInfo = await User.create({ phone: phone })
 
-
-
-        // user phone exist
+            if (userInfo === null) {
+                return { code: unknownError }
+            }
+        }
 
 
         // get jwt and start generate the token with the user id only
+        const userToken = JWT.sign({ user_id: userInfo._id }, jwtConfig.secret, jwtConfig.options)
 
+        // store in redis and return in response
 
-        // save the token and user id in redis 
-
+        /*
+                // redisClient.on('connect', async function () {
+                // })
+                let x = await redis.createClient('6379', '127.0.0.1')
+         
+                x.set('name', 'hatem')
+         
+                console.log(x.exists('name'));
+         
+                // console.log(redisClient.exists('name'));
+                // redisClient.exists(userInfo._id, function (err, reply) {
+                //     if (reply === 1) {
+                //         let newValue = [userToken, ...redisClient.get(userInfo._id)]
+                //         redisClient.del(userInfo._id)
+                //         redisClient.set(userInfo._id, newValue)
+                //         redisClient.expire(userInfo._id, jwtConfig.options.expiresIn)
+                //     } else {
+                //         redisClient.set(userInfo._id, [userToken])
+                //         redisClient.expire(userInfo._id, jwtConfig.options.expiresIn)
+                //     }
+                // });
+                */
 
         // return the token back to android and make endpoint to check if he is verified or not
+        return { code: 200, token: userToken }
 
     } else {
         // code is expired
-        return 300
+        return { code: 300 }
     }
 
 }

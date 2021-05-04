@@ -5,6 +5,5 @@ module.exports = (code, status, message, data = [], errors) => {
         message: message,
         data: data,
         errors: errors
-
     }
 }
