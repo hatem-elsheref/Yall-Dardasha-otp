@@ -195,7 +195,8 @@ module.exports.otpVerify = async function (connection, phone, code, expire, devi
 
 
 
-        userServiceResponse = await fetch(AppUrl + ':3001/auth/user/info', options).then(res => res.json())
+        // userServiceResponse = await fetch(AppUrl + ':3001/auth/user/info', options).then(res => res.json())
+        userServiceResponse = await fetch('https://yalla-dardasha-user.herokuapp.com/auth/user/info', options).then(res => res.json())
 
 
 
