@@ -1,4 +1,5 @@
 const Response = require('./response')
+
 const { validationResult } = require('express-validator')
 
 module.exports.checkValidationError = (request, response, next) => {

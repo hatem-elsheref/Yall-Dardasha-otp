@@ -1,6 +1,6 @@
-const { jwt: jwtConfig, services_api_key: ApiKey, app_url: AppUrl } = require('./../config/app')
+const { jwt : jwtConfigs, apiKey, devEnvironment} = require('./../config')
 
-const redis = require("./../config/redis");
+const redis = require("./../redisConnection")
 
 const fetch = require('node-fetch')
 
@@ -13,7 +13,6 @@ const table = 'otp';
 const generateCode = function () {
 
     return '555555' // for test
-
 
     return '' +
         Math.floor(Math.random() * 10) +
@@ -84,7 +83,6 @@ function update(connection, phoneNumber, tries) {
 
 
         connection.query(query, [values, phoneNumber], function (error) { /*error ? console.log(error) : console.log('tmt');*/ return error ? resolve(100) : resolve(200) })
-
     })
 }
 
@@ -126,11 +124,10 @@ module.exports.otpCode = async function (connection, phone, tries) {
     let response = await getByPhoneNumber(connection, phone)
     let rows = []
 
-
     if (Array.isArray(response))
         rows = response
     else
-        return response
+        return Response(response, 'fail', 'try again', [], [])
 
 
     if (rows.length > 0) {
@@ -143,18 +140,29 @@ module.exports.otpCode = async function (connection, phone, tries) {
             /*
             console.log('allowed to generate new code');
             */
-            return await update(connection, phone, rows[0].tries < tries ? rows[0].tries + 1 : 1)
+            response = await update(connection, phone, rows[0].tries < tries ? rows[0].tries + 1 : 1)
+
+            if (parseInt(response) === 100)
+                return Response(response, 'fail', 'try again', [], [])
+            else
+                return Response(200, 'success', 'code sent successfully', phone, [])
         } else {
             // not allowed to regenerate in current day try after 24 hours
             /*
              console.log('not allowed try after 24 h');
             */
-            return 300;
+            return Response(300, 'fail', 'your number blocked try again after 24 hours', [], []);
         }
 
     } else {
         // create new record
-        return await create(connection, phone)
+
+        response = await create(connection, phone)
+
+        if (parseInt(response) === 100)
+            return Response(response, 'fail', 'try again', [], [])
+        else
+            return Response(200, 'success', 'code sent successfully', phone, [])
     }
 
 }
@@ -187,17 +195,21 @@ module.exports.otpVerify = async function (connection, phone, code, expire, devi
 
             headers: {
                 'Content-Type': 'application/json',
-                'API_KEY': ApiKey || '11bf5b37-e0b8-42e0-8dcf-dc8c4aefc000'
+                'API_KEY': apiKey
             },
 
             body: JSON.stringify({ phone: phone })
         }
 
 
+        let api = '/api/v1/user/info'
+        let userServiceResponse = {code : 404}
 
-        // userServiceResponse = await fetch(AppUrl + ':3001/auth/user/info', options).then(res => res.json())
-        userServiceResponse = await fetch('https://yalla-dardasha-user.herokuapp.com/auth/user/info', options).then(res => res.json())
-
+        if (devEnvironment){
+            userServiceResponse = await fetch( 'http://localhost:3001' + api, options).then(res => res.json())
+        }else{
+            userServiceResponse = await fetch('https://yalla-dardasha-user.herokuapp.com' + api, options).then(res => res.json())
+        }
 
 
         // if user already registered before
@@ -205,11 +217,12 @@ module.exports.otpVerify = async function (connection, phone, code, expire, devi
 
             let deviceType = device || 'android-phone'
             // get jwt and start generate the token with the user id only
-            const userToken = JWT.sign({ user_id: userServiceResponse.user._id, device: deviceType }, jwtConfig.secret, jwtConfig.options)
+            const userToken = JWT.sign({ user_id: userServiceResponse.user._id, device: deviceType }, jwtConfigs.secret, jwtConfigs.options)
 
             // store in redis and return in response
-
-
+            // #####################################
+            // we need in the future to check if exist before or not and remove if not used to save space
+            // #####################################
             redis.sadd('user_' + userServiceResponse.user._id, JSON.stringify({ userToken, deviceType }));
 
             /*
@@ -224,7 +237,7 @@ module.exports.otpVerify = async function (connection, phone, code, expire, devi
         } else if (userServiceResponse.code === 404)
             return Response(200, 'success', 'verified successfully', [{ token: null, hasAccount: false }], [])
         else
-            return Response(userServiceResponse.code, 'fail', userServiceResponse.message, [], [])
+            return Response(userServiceResponse.code ?? 404, 'fail', userServiceResponse.message ?? 'unknown error', [], [])
 
     } else {
         // code is expired
@@ -232,5 +245,16 @@ module.exports.otpVerify = async function (connection, phone, code, expire, devi
 
     }
 
+
+}
+
+module.exports.otpToken = async function (user_id, device = null){
+    let deviceType = device || 'android-phone'
+
+    const userToken = await JWT.sign({ user_id: user_id, device: deviceType }, jwtConfigs.secret, jwtConfigs.options)
+
+    await redis.sadd('user_' + user_id, JSON.stringify({ userToken, deviceType }));
+
+    return Response(200, 'success', 'created and verified successfully', [{ token: userToken, hasAccount: true }], [])
 
 }

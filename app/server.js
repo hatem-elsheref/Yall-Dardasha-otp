@@ -1,4 +1,6 @@
-const config = require('./config/app')
+const configurations = require('./config')
+
+const currentEnvironment = configurations.devEnvironment ? configurations.development : configurations.production
 
 const express = require('express')
 
@@ -11,12 +13,14 @@ const app = express()
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: true }))
 
-app.use('/auth/otp', otpService)
+app.use('/api/v1/otp', otpService)
 
-app.get('/me', function (request, response) {
-    return response.send('otp service')
+
+app.get('/about-service', function (request, response) {
+    return response.send('Hello Yalla Dardasha  / service-name : ' + configurations.serviceName + ', service-description : ' + configurations.serviceDescription);
 })
 
-app.listen(process.env.PORT || 80, function () {
-    console.log(`application running in ${config.app_url}:${process.env.PORT || 80}`);
+
+app.listen(currentEnvironment.port, function () {
+    console.log(`application running in ${currentEnvironment.url}`);
 });
