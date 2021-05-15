@@ -212,13 +212,14 @@ module.exports.otpVerify = async function (connection, phone, code, expire, devi
             let deviceType = device || 'android-phone'
             let payload = { user_id: userServiceResponse.user._id, device_type: deviceType }
             // get jwt and start generate the token with the user id only
-            const userToken = JWT.sign(payload, jwtConfigs.secret, jwtConfigs.options)
+            const userToken = await JWT.sign(payload, jwtConfigs.secret, jwtConfigs.options)
+            const refreshToken = await JWT.sign(payload, jwtConfigs.secret, {...jwtConfigs.options, expiresIn: jwtConfigs.refreshToken})
 
             // store in redis and return in response
             redis.sadd('user_' + userServiceResponse.user._id, JSON.stringify({ token: userToken, device: deviceType }));
 
             // return the token back to android and make endpoint to check if he is verified or not
-            return {code : 200, status: 'success', message: 'verified successfully', data: { token: userToken, accountVerified: userServiceResponse.accountVerified }}
+            return {code : 200, status: 'success', message: 'verified successfully', data: { token: userToken, refreshToken: refreshToken, accountVerified: userServiceResponse.accountVerified }}
 
         } else
             return {code: userServiceResponse.code ?? 500, status: 'fail', message: userServiceResponse.message ?? 'unknown error', data: {}}

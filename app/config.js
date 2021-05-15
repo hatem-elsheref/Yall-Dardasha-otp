@@ -7,7 +7,8 @@ module.exports = {
         options: {
             expiresIn: '24h',
             algorithm: 'HS256'
-        }
+        },
+        refreshToken : '30d'
     },
     otpAttempt: 100, // 100 for test //3 number of tries ber day
     otpExpireAfter: 1440, //1 day for test // in minutes
@@ -24,5 +25,5 @@ module.exports = {
         mysql : 'mysql://p2far3f59ryfm287:oz4d4u0fd432ukoa@bmlx3df4ma7r1yh4.cbetxkdyhwsb.us-east-1.rds.amazonaws.com:3306/lb05onifh0ulceie'
     },
 
-    devEnvironment : false
+    devEnvironment : true
 }

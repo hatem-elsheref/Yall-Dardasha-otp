@@ -1,4 +1,4 @@
-const { code, verify } = require('./../controllers/otpController')
+const { code, verify, refresh } = require('./../controllers/otpController')
 
 const { otpPhoneValidator, otpCodeValidator } = require('./../middlewares/validatorMiddleware')
 
@@ -11,6 +11,8 @@ const otpRouter = express.Router()
 otpRouter.post('/code', otpPhoneValidator(), checkValidationError, code)
 
 otpRouter.post('/verify', otpCodeValidator(), checkValidationError, verify)
+
+otpRouter.post('/refresh', refresh)
 
 
 module.exports = otpRouter;
