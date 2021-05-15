@@ -138,26 +138,25 @@ module.exports.otpCode = async function (connection, phone, tries) {
             response = await update(connection, phone, rows[0].tries < tries ? rows[0].tries + 1 : 1)
 
             if (parseInt(response) === 100)
-                return Response(response, 'fail', 'try again', [], [])
+                return Response(response, 'fail', 'try again')
             else
-                return Response(200, 'success', 'code sent successfully', phone, [])
+                return Response(200, 'success', 'code sent successfully')
         } else {
             // not allowed to regenerate in current day try after 24 hours
             /*
              console.log('not allowed try after 24 h');
             */
-            return Response(300, 'fail', 'your number blocked try again after 24 hours', [], []);
+            return Response(300, 'fail', 'your number blocked try again after 24 hours');
         }
 
     } else {
         // create new record
-
         response = await create(connection, phone)
 
         if (parseInt(response) === 100)
-            return Response(response, 'fail', 'try again', [], [])
+            return Response(response, 'fail', 'try again')
         else
-            return Response(200, 'success', 'code sent successfully', phone, [])
+            return Response(200, 'success', 'code sent successfully')
     }
 
 }
@@ -222,7 +221,7 @@ module.exports.otpVerify = async function (connection, phone, code, expire, devi
             return Response(200, 'success', 'verified successfully', [{ token: userToken, accountVerified: userServiceResponse.accountVerified }], [])
 
         } else
-            return Response(userServiceResponse.code ?? 400, 'fail', userServiceResponse.message ?? 'unknown error', [], [])
+            return Response(userServiceResponse.code ?? 500, 'fail', userServiceResponse.message ?? 'unknown error', [], [])
 
     } else {
         // code is expired

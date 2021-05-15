@@ -2,7 +2,7 @@ const databaseHandler = require('./../mysqlConnection')
 
 const { otpAttempt, otpExpireAfter } = require('./../config')
 
-const { otpCode, otpVerify , otpToken} = require('./../models/OtpModel')
+const { otpCode, otpVerify } = require('./../models/OtpModel')
 
 module.exports.code = (request, response) => {
     otpCode(databaseHandler, request.body.phone, otpAttempt).then(status => {
