@@ -21,7 +21,6 @@ const generateCode = function () {
         Math.floor(Math.random() * 10) +
         Math.floor(Math.random() * 10) +
         Math.floor(Math.random() * 10)
-
 }
 
 function getByPhoneNumber(connection, phoneNumber) {
@@ -54,10 +53,6 @@ function resetTriesNumberToZero(connection, phoneNumber) {
 function create(connection, phoneNumber) {
     return new Promise((resolve, reject) => {
 
-        /*
-        console.log('create');
-        */
-
         let code = generateCode()
 
         let values = { otp_code: code, phone: phoneNumber, tries: 1, send_at: (new Date()).getTime() }
@@ -72,7 +67,7 @@ function create(connection, phoneNumber) {
 function update(connection, phoneNumber, tries) {
     return new Promise((resolve, reject) => {
 
-        // console.log('update +1 of tries');
+        // update +1 of tries
 
         let code = generateCode()
 
@@ -203,7 +198,7 @@ module.exports.otpVerify = async function (connection, phone, code, expire, devi
 
 
         let api = '/api/v1/user/info'
-        let userServiceResponse = {code : 404}
+        let userServiceResponse = null
 
         if (devEnvironment){
             userServiceResponse = await fetch( 'http://localhost:3001' + api, options).then(res => res.json())
@@ -216,28 +211,18 @@ module.exports.otpVerify = async function (connection, phone, code, expire, devi
         if (userServiceResponse.code === 200) {
 
             let deviceType = device || 'android-phone'
+            let payload = { user_id: userServiceResponse.user._id, device_type: deviceType }
             // get jwt and start generate the token with the user id only
-            const userToken = JWT.sign({ user_id: userServiceResponse.user._id, device: deviceType }, jwtConfigs.secret, jwtConfigs.options)
+            const userToken = JWT.sign(payload, jwtConfigs.secret, jwtConfigs.options)
 
             // store in redis and return in response
-            // #####################################
-            // we need in the future to check if exist before or not and remove if not used to save space
-            // #####################################
-            redis.sadd('user_' + userServiceResponse.user._id, JSON.stringify({ userToken, deviceType }));
-
-            /*
-            redis.smembers('user_' + userServiceResponse.user._id, function (error, result) {
-                console.log(result);
-            });
-            */
+            redis.sadd('user_' + userServiceResponse.user._id, JSON.stringify({ token: userToken, device: deviceType }));
 
             // return the token back to android and make endpoint to check if he is verified or not
-            return Response(200, 'success', 'verified successfully', [{ token: userToken, hasAccount: true }], [])
+            return Response(200, 'success', 'verified successfully', [{ token: userToken, accountVerified: userServiceResponse.accountVerified }], [])
 
-        } else if (userServiceResponse.code === 404)
-            return Response(200, 'success', 'verified successfully', [{ token: null, hasAccount: false }], [])
-        else
-            return Response(userServiceResponse.code ?? 404, 'fail', userServiceResponse.message ?? 'unknown error', [], [])
+        } else
+            return Response(userServiceResponse.code ?? 400, 'fail', userServiceResponse.message ?? 'unknown error', [], [])
 
     } else {
         // code is expired
@@ -245,16 +230,5 @@ module.exports.otpVerify = async function (connection, phone, code, expire, devi
 
     }
 
-
-}
-
-module.exports.otpToken = async function (user_id, device = null){
-    let deviceType = device || 'android-phone'
-
-    const userToken = await JWT.sign({ user_id: user_id, device: deviceType }, jwtConfigs.secret, jwtConfigs.options)
-
-    await redis.sadd('user_' + user_id, JSON.stringify({ userToken, deviceType }));
-
-    return Response(200, 'success', 'created and verified successfully', [{ token: userToken, hasAccount: true }], [])
 
 }

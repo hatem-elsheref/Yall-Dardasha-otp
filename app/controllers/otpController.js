@@ -15,9 +15,3 @@ module.exports.verify = (request, response) => {
         return response.json(status)
     })
 }
-
-module.exports.getToken = (request, response) => {
-    otpToken(request.body.user_id, request.body.device).then(status => {
-        return response.json(status)
-    })
-}

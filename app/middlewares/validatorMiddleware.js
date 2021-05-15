@@ -1,19 +1,5 @@
 const { body, check } = require('express-validator')
 
-const {apiKey} = require('./../config')
-
-module.exports.allowedToAccess = (request, response, next) => {
-    try {
-        if (request.headers["api_key"] !== apiKey){
-            return response.json({code : 401, user : null, message : 'not allowed to access this resource'})
-        }
-    }catch (Error){
-        return response.json({code : 401, user : null, message : 'not allowed to access this resource'})
-    }
-
-    next()
-}
-
 module.exports.otpPhoneValidator = () => {
 
     return [
