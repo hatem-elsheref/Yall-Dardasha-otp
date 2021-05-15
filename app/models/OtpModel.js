@@ -122,7 +122,7 @@ module.exports.otpCode = async function (connection, phone, tries) {
     if (Array.isArray(response))
         rows = response
     else
-        return Response(response, 'fail', 'try again', [], [])
+        return {code: response, status: 'fail', message: 'try again'}
 
 
     if (rows.length > 0) {
@@ -138,15 +138,15 @@ module.exports.otpCode = async function (connection, phone, tries) {
             response = await update(connection, phone, rows[0].tries < tries ? rows[0].tries + 1 : 1)
 
             if (parseInt(response) === 100)
-                return Response(response, 'fail', 'try again')
+                return {code: response, status : 'fail', message: 'try again'}
             else
-                return Response(200, 'success', 'code sent successfully')
+                return {code: 200, status: 'success', message: 'code sent successfully'}
         } else {
             // not allowed to regenerate in current day try after 24 hours
             /*
              console.log('not allowed try after 24 h');
             */
-            return Response(300, 'fail', 'your number blocked try again after 24 hours');
+            return {code: 300, status: 'fail', message: 'your number blocked try again after 24 hours'};
         }
 
     } else {
@@ -154,9 +154,9 @@ module.exports.otpCode = async function (connection, phone, tries) {
         response = await create(connection, phone)
 
         if (parseInt(response) === 100)
-            return Response(response, 'fail', 'try again')
+            return {code : response, status: 'fail', message: 'try again'}
         else
-            return Response(200, 'success', 'code sent successfully')
+            return {code: 200, status: 'success', message: 'code sent successfully'}
     }
 
 }
@@ -173,7 +173,7 @@ module.exports.otpVerify = async function (connection, phone, code, expire, devi
     if (Array.isArray(response) && response.length > 0)
         user = response[0]
     else
-        return Response(Number.isInteger(response) ? response : 100, 'fail', 'invalid code or phone number not found', [], [])
+        return {code : Number.isInteger(response) ? response : 100, status : 'fail', message: 'invalid code or phone number not found', data : {}}
 
 
     // here that mean that user and code exist so that we should validate expire date it must be less than or equal the default
@@ -218,14 +218,14 @@ module.exports.otpVerify = async function (connection, phone, code, expire, devi
             redis.sadd('user_' + userServiceResponse.user._id, JSON.stringify({ token: userToken, device: deviceType }));
 
             // return the token back to android and make endpoint to check if he is verified or not
-            return Response(200, 'success', 'verified successfully', [{ token: userToken, accountVerified: userServiceResponse.accountVerified }], [])
+            return {code : 200, status: 'success', message: 'verified successfully', data: { token: userToken, accountVerified: userServiceResponse.accountVerified }}
 
         } else
-            return Response(userServiceResponse.code ?? 500, 'fail', userServiceResponse.message ?? 'unknown error', [], [])
+            return {code: userServiceResponse.code ?? 500, status: 'fail', message: userServiceResponse.message ?? 'unknown error', data: {}}
 
     } else {
         // code is expired
-        return Response(300, 'fail', 'expired code', [], [])
+        return {code : 300, status: 'fail', message: 'expired code', data : {}}
 
     }
 
