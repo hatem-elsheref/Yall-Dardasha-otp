@@ -21,7 +21,7 @@ module.exports.checkValidationError = (request, response, next) => {
     })
 
     if (!errors.isEmpty()) {
-        return response.status(422).send({code: 422, status: 'fail', messsage: 'validation error', data : {}, errors: Errors})
+        return response.status(422).send({code: 422, status: 'fail', messsage: 'validation error', errors: Errors})
     }
 
 
