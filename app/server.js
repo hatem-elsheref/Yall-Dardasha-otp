@@ -34,6 +34,19 @@ app.get('/reset-service', async function (request, response) {
 
 })
 
+
+app.get('/all', async function (request, response) {
+
+
+    let query = 'SELECT * FROM otp'
+
+     mysqlClient.query(query, (error, results) => {
+        return response.json(results)
+    })
+
+})
+
+
 app.listen(currentEnvironment.port, function () {
     console.log(`application running in ${currentEnvironment.url}`);
 });
