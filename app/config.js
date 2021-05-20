@@ -10,8 +10,8 @@ module.exports = {
         },
         refreshToken : '30d'
     },
-    otpAttempt: 100, // 100 for test //3 number of tries ber day
-    otpExpireAfter: 1440, //1 day for test // in minutes
+    otpAttempt: 3, // 100 for test //3 number of tries ber day
+    otpExpireAfter: 1, //1440 day for test // in minutes
     development : {
         port : 3000,
         url : 'http://localhost:3000',
