@@ -88,9 +88,9 @@ const allowedToGenerateNewCode = async function (connection, record, phone, trie
 
     let currentTime = (new Date()).getTime()
 
-    // let h24 = 60 * 60 * 24
+    let h24 = 60 * 60 * 24
 
-    let h24 = 24 // for test
+    // let h24 = 24 // for test
 
 
 
