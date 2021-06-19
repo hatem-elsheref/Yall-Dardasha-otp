@@ -92,16 +92,14 @@ const allowedToGenerateNewCode = async function (connection, record, phone, trie
 
     // let h24 = 24 // for test
 
-
-
     if (((currentTime - lastMessageSentAt) / 1000) < h24) {
 
-        // at the same day and completed the all available triess => not allowed
+        // at the same day and completed the all available tries => not allowed
 
         /*
         console.log('[ at the same day ] time between now and last sent code < 24 hours');
-        console.log('if true not exceded the allowed number of tries ' + (record.tries + 1) + '/' + tries);
-        console.log('if false sorry,  exceded the allowed number of tries ' + (record.tries + 1) + '/' + tries);
+        console.log('if true not exceeded the allowed number of tries ' + (record.tries + 1) + '/' + tries);
+        console.log('if false sorry,  exceeded the allowed number of tries ' + (record.tries + 1) + '/' + tries);
         */
 
         return ((parseInt(record.tries) + 1) <= tries);
@@ -196,7 +194,7 @@ module.exports.otpVerify = async function (connection, phone, code, expire, devi
         }
 
 
-        let api = '/api/v1/user/info'
+        let api = '/info'
         let userServiceResponse = null
 
         if (devEnvironment){
