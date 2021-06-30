@@ -16,7 +16,6 @@ otpRouter.post('/refresh', refresh)
 
 otpRouter.post('/verify-redis', verifyToken)
 
-
 otpRouter.post('/logout', logout)
 
 module.exports = otpRouter;

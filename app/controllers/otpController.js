@@ -21,18 +21,36 @@ module.exports.verify = (request, response) => {
 }
 
 module.exports.logout = async (request, response) => {
+    try {
+        const authHeader = request.headers.authorization;
+        if (authHeader) {
+            const token = authHeader.split(' ')[1];
+            await JWT.verify(token, jwt.secret, jwt.options, async (error, user) => {
+                if (error)
+                    return response.status(403).json({ status: false, message: 'expired token' });
 
-    await redis.smembers('user_' + request._id, function (err, rep) {
-        rep.forEach((val) => {
-            let data = JSON.parse(val)
-            if (data.device === deviceType) {
-                redis.srem('user_' + request._id, val)
-            }
-        })
+                let deviceType = request.body.device || 'android-phone';
+                await redis.smembers('user_' + user.user_id, async (err, tokens) => {
+                    if (!err && tokens.length > 0) {
+                        await tokens.forEach((val) => {
+                            let data = JSON.parse(val)
+                            if (data.device === deviceType) {
+                                redis.srem('user_' + user.user_id, val)
+                            }
+                        })
+                    }
 
-    })
+                    return response.json({ message: "loged out successfully" })
 
-    return response.json({ message: "loged out successfully" })
+                });
+            });
+
+        } else {
+            return response.status(403).json({ status: false, message: "token not found" });
+        }
+    } catch (Error) {
+        return response.status(403).json({ status: false, message: "token expired" });
+    }
 
 }
 
